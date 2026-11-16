@@ -1,0 +1,5 @@
+# PROD values - only what differs from values.yaml
+replicaCount: 2
+ui:
+  message: "hello-chart PROD (Helm values-prod.yaml)"
+  color: "#1a7f37"

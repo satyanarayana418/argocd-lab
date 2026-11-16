@@ -1,0 +1,39 @@
+# AppProject "lab": the security fence for every lab app.
+# Apply on Day 2:  kubectl apply -f argocd/projects/lab-project.yaml
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: lab
+  namespace: argocd
+spec:
+  description: Argo CD learning lab
+  # Only these repositories may be used by apps in this project
+  sourceRepos:
+    - https://github.com/satyanarayana418/argocd-lab.git
+    - https://github.com/argoproj/argocd-example-apps.git
+    - https://stefanprodan.github.io/podinfo
+  # Only this cluster, and only namespaces that start with "lab-"
+  destinations:
+    - server: https://kubernetes.default.svc
+      namespace: 'lab-*'
+  # Cluster-scoped kinds are denied unless listed here
+  clusterResourceWhitelist:
+    - group: ''
+      kind: Namespace
+  # Warn about objects in lab namespaces that no app manages
+  orphanedResources:
+    warn: true
+  # Day 6: a role for a CI robot that may only sync lab apps
+  roles:
+    - name: ci-sync
+      description: CI pipeline - may view and sync lab apps
+      policies:
+        - p, proj:lab:ci-sync, applications, get, lab/*, allow
+        - p, proj:lab:ci-sync, applications, sync, lab/*, allow
+  # Day 6 drill: uncomment to block all syncs (a "change freeze")
+  # syncWindows:
+  #   - kind: deny
+  #     schedule: '* * * * *'
+  #     duration: 1h
+  #     applications: ['*']
+  #     manualSync: false

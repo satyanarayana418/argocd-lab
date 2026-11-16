@@ -1,0 +1,46 @@
+# hello-web: a tiny web app (podinfo image) used all week.
+# The page shows PODINFO_UI_MESSAGE on a PODINFO_UI_COLOR background,
+# so you can SEE every Git change in your browser.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hello-web
+  labels:
+    app: hello-web
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: hello-web
+  template:
+    metadata:
+      labels:
+        app: hello-web
+    spec:
+      containers:
+        - name: web
+          image: ghcr.io/stefanprodan/podinfo:6.5.0
+          ports:
+            - name: http
+              containerPort: 9898
+          env:
+            - name: PODINFO_UI_MESSAGE      # env[0] - overlays patch this
+              value: "Hello from Argo CD"
+            - name: PODINFO_UI_COLOR        # env[1] - overlays patch this
+              value: "#34577c"
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: 9898
+            initialDelaySeconds: 3
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 9898
+            initialDelaySeconds: 5
+          resources:
+            requests:
+              cpu: 10m
+              memory: 32Mi
+            limits:
+              memory: 128Mi

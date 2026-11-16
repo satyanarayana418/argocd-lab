@@ -1,0 +1,22 @@
+# Day 4: sync waves + PreSync/PostSync hooks.
+# Apply:  kubectl apply -f argocd/apps/waves-demo.yaml   (root-app adopts it on Day 5)
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: waves-demo
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: lab
+  source:
+    repoURL: https://github.com/satyanarayana418/argocd-lab.git
+    targetRevision: main
+    path: apps/waves-demo
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: lab-waves
+  syncPolicy:
+    # Manual sync on purpose: you will press SYNC and watch the order in the UI.
+    syncOptions:
+      - CreateNamespace=true

@@ -1,0 +1,41 @@
+# Day 5: ApplicationSet - one template, three environments.
+# Before applying, remove the hand-made dev app WITHOUT deleting its pods:
+#   argocd app delete hello-web-dev --cascade=false
+# Then:  kubectl apply -f argocd/appsets/hello-web-appset.yaml
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: hello-web
+  namespace: argocd
+spec:
+  goTemplate: true
+  goTemplateOptions: ["missingkey=error"]
+  generators:
+    - list:
+        elements:
+          - env: dev
+          - env: qa
+          - env: prod
+          # Day 5 drill: add "- env: uat" (and create overlays/uat) -> a 4th app appears
+  template:
+    metadata:
+      name: 'hello-web-{{.env}}'
+      labels:
+        env: '{{.env}}'
+      finalizers:
+        - resources-finalizer.argocd.argoproj.io
+    spec:
+      project: lab
+      source:
+        repoURL: https://github.com/satyanarayana418/argocd-lab.git
+        targetRevision: main
+        path: 'apps/hello-web/overlays/{{.env}}'
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: 'lab-{{.env}}'
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true

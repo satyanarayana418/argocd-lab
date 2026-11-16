@@ -1,0 +1,35 @@
+# Wave 1: created only after wave -1 and wave 0 are Healthy.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: waves-web
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: waves-web
+  template:
+    metadata:
+      labels:
+        app: waves-web
+    spec:
+      containers:
+        - name: web
+          image: ghcr.io/stefanprodan/podinfo:6.5.0
+          ports:
+            - containerPort: 9898
+          envFrom:
+            - configMapRef:
+                name: waves-config      # created in wave -1
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: 9898
+          resources:
+            requests:
+              cpu: 10m
+              memory: 32Mi
+            limits:
+              memory: 128Mi

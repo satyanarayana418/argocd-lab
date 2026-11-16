@@ -1,0 +1,24 @@
+# Day 5: App of Apps. One Application that manages every file in argocd/apps/.
+# Apply ONCE by hand:  kubectl apply -f argocd/root-app.yaml
+# From then on: add/remove a file in argocd/apps/ -> an app appears/disappears.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: root-app
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io   # deleting root-app deletes all child apps (and their resources)
+spec:
+  project: default          # it creates Application objects in the argocd namespace,
+                            # which the "lab" project (lab-* namespaces only) would not allow
+  source:
+    repoURL: https://github.com/satyanarayana418/argocd-lab.git
+    targetRevision: main
+    path: argocd/apps
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: argocd
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true

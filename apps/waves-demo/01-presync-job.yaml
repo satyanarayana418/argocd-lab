@@ -1,0 +1,25 @@
+# PreSync hook: runs BEFORE anything else on every sync (think: DB schema / migration).
+# Day 4 drill: change "exit 0" to "exit 1", push, and watch the whole sync stop here.
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: db-migrate
+  annotations:
+    argocd.argoproj.io/hook: PreSync
+    argocd.argoproj.io/hook-delete-policy: BeforeHookCreation,HookSucceeded
+spec:
+  backoffLimit: 0
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: migrate
+          image: busybox:1.36
+          command:
+            - sh
+            - -c
+            - |
+              echo "PreSync: pretending to migrate the database schema..."
+              sleep 10
+              echo "PreSync: done"
+              exit 0

@@ -1,0 +1,14 @@
+# No annotation = wave 0 (the default).
+apiVersion: v1
+kind: Service
+metadata:
+  name: waves-web
+spec:
+  type: NodePort
+  selector:
+    app: waves-web
+  ports:
+    - name: http
+      port: 80
+      targetPort: 9898
+      nodePort: 30086

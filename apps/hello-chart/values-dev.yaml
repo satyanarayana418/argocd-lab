@@ -1,0 +1,5 @@
+# DEV values - only what differs from values.yaml
+replicaCount: 1
+ui:
+  message: "hello-chart DEV (Helm values-dev.yaml)"
+  color: "#6e40c9"

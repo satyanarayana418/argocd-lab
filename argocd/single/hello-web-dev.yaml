@@ -1,0 +1,26 @@
+# Day 2: your first Application from YOUR repo.
+# Apply:  kubectl apply -f argocd/single/hello-web-dev.yaml
+# It starts with MANUAL sync. Step 6 of Day 2 turns on auto-sync by
+# un-commenting the "automated" block below and applying again.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: hello-web-dev
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io   # deleting the app also deletes its resources
+spec:
+  project: lab
+  source:
+    repoURL: https://github.com/satyanarayana418/argocd-lab.git
+    targetRevision: main
+    path: apps/hello-web/overlays/dev
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: lab-dev
+  syncPolicy:
+    # automated:
+    #   prune: true
+    #   selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

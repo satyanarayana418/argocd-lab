@@ -1,0 +1,13 @@
+# Default values. Environment files (values-dev.yaml, values-prod.yaml) override these.
+replicaCount: 1
+
+image:
+  repository: ghcr.io/stefanprodan/podinfo
+  tag: "6.5.0"
+
+ui:
+  message: "Hello from my own Helm chart"
+  color: "#6e40c9"
+
+service:
+  nodePort: 30084

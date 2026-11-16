@@ -1,0 +1,8 @@
+# Day 6: local users.
+# Apply:  kubectl -n argocd patch configmap argocd-cm --type merge --patch-file argocd/security/argocd-cm-accounts-patch.yaml
+# Then set passwords (logged in as admin):
+#   argocd account update-password --account dev-user --current-password <ADMIN_PASSWORD> --new-password <NEW_PASSWORD>
+#   argocd account generate-token --account ci-bot      # API token for a pipeline
+data:
+  accounts.dev-user: login          # can log in to UI/CLI
+  accounts.ci-bot: apiKey           # cannot log in; can only use API tokens

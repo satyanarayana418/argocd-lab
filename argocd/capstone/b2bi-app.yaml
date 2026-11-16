@@ -1,0 +1,28 @@
+# Day 7 capstone: Sterling B2Bi (ibm-b2bi-prod chart) managed by Argo CD.
+# Read b2bi/README.md and document 04 (section "Capstone") BEFORE applying.
+# Apply:  kubectl apply -f argocd/capstone/b2bi-app.yaml     then press SYNC yourself.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: b2bi
+  namespace: argocd
+  # NO resources-finalizer on purpose: deleting this Application must NOT delete B2Bi.
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/satyanarayana418/argocd-lab.git
+    targetRevision: main
+    path: b2bi/ibm-b2bi-prod                  # the chart you extracted (helm pull --untar)
+    helm:
+      releaseName: b2bi                       # same release name you used with helm install
+      valueFiles:
+        - ../b2bi-values-override.yaml        # your override file, one folder up (no secrets in it!)
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: b2bi
+  syncPolicy:
+    # Manual sync on purpose: the first install runs the DB setup (30-60 min).
+    # Turn on automated sync only after B2Bi is stable and dataSetup.enabled is false.
+    syncOptions:
+      - ServerSideApply=true                  # big chart objects; avoids the last-applied annotation size limit
+      - PruneLast=true

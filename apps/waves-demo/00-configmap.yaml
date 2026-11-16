@@ -1,0 +1,10 @@
+# Wave -1: must exist BEFORE the Deployment (wave 1) that reads it.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: waves-config
+  annotations:
+    argocd.argoproj.io/sync-wave: "-1"
+data:
+  PODINFO_UI_MESSAGE: "Deployed in order: PreSync hook -> wave -1 -> wave 0 -> wave 1 -> PostSync test"
+  PODINFO_UI_COLOR: "#c2410c"

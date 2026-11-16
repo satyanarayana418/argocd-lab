@@ -1,0 +1,17 @@
+# Day 6: RBAC.
+# Apply:  kubectl -n argocd patch configmap argocd-rbac-cm --type merge --patch-file argocd/security/argocd-rbac-cm-patch.yaml
+# Format:  p, <role>, <resource>, <action>, <project>/<object>, allow|deny
+#          g, <user or SSO group>, <role>
+data:
+  policy.default: role:readonly     # every logged-in user can at least look
+  policy.csv: |
+    # Developers: view, sync and read logs of apps in project "lab" - nothing else
+    p, role:lab-developer, applications, get, lab/*, allow
+    p, role:lab-developer, applications, sync, lab/*, allow
+    p, role:lab-developer, logs, get, lab/*, allow
+    g, dev-user, role:lab-developer
+
+    # CI robot: may only get + sync lab apps
+    p, role:ci, applications, get, lab/*, allow
+    p, role:ci, applications, sync, lab/*, allow
+    g, ci-bot, role:ci

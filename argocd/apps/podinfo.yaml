@@ -1,0 +1,35 @@
+# Day 3: a third-party chart straight from a Helm repository (no Git folder).
+# Apply:  kubectl apply -f argocd/apps/podinfo.yaml   (root-app adopts it on Day 5)
+# Check available versions:  helm repo add podinfo https://stefanprodan.github.io/podinfo && helm search repo podinfo --versions
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: podinfo
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: lab
+  source:
+    repoURL: https://stefanprodan.github.io/podinfo   # a Helm repo, not Git
+    chart: podinfo                                    # "chart" instead of "path"
+    targetRevision: 6.7.0                             # = chart version (pin it!)
+    helm:
+      releaseName: podinfo
+      valuesObject:
+        replicaCount: 2
+        ui:
+          message: "podinfo from a Helm repo - deployed by Argo CD"
+          color: "#e8622c"
+        service:
+          type: NodePort
+          nodePort: 30085
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: lab-podinfo
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

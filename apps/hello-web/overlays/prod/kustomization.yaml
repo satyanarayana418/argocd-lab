@@ -1,0 +1,29 @@
+# PROD overlay: 3 replicas, green page, NodePort 30083
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - ../../base
+replicas:
+  - name: hello-web
+    count: 3
+images:
+  - name: ghcr.io/stefanprodan/podinfo
+    newTag: "6.5.0"           # promoted from qa by Pull Request (with approval)
+patches:
+  - target:
+      kind: Deployment
+      name: hello-web
+    patch: |-
+      - op: replace
+        path: /spec/template/spec/containers/0/env/0/value
+        value: "Hello from PROD - deployed by Argo CD"
+      - op: replace
+        path: /spec/template/spec/containers/0/env/1/value
+        value: "#1a7f37"
+  - target:
+      kind: Service
+      name: hello-web
+    patch: |-
+      - op: add
+        path: /spec/ports/0/nodePort
+        value: 30083

@@ -1,0 +1,30 @@
+# Day 3: your own Helm chart, stored in Git, deployed with DEV values.
+# Apply:  kubectl apply -f argocd/single/hello-chart.yaml
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: hello-chart
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: lab
+  source:
+    repoURL: https://github.com/satyanarayana418/argocd-lab.git
+    targetRevision: main
+    path: apps/hello-chart              # folder with Chart.yaml -> Argo CD uses Helm
+    helm:
+      releaseName: hello-chart
+      valueFiles:                      # values.yaml is always loaded first by Helm
+        - values-dev.yaml              # Day 3 drill: switch to values-prod.yaml
+      # valuesObject:                  # Day 3 drill: inline override (highest priority)
+      #   replicaCount: 3
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: lab-helm
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

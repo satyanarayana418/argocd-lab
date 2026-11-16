@@ -1,0 +1,42 @@
+# REFERENCE ONLY - a real CI pipeline for the "CI builds, Git records, Argo CD deploys" flow.
+# Put this in the APPLICATION repo as .github/workflows/build-and-bump.yml.
+# It builds an image, pushes it to GitHub Container Registry, then writes the new
+# tag into the GitOps repo (argocd-lab). Argo CD sees the commit and deploys it.
+#
+# Needs a repo secret GITOPS_TOKEN = a fine-grained PAT with "Contents: Read and write"
+# on satyanarayana418/argocd-lab only.
+name: build-and-bump
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    env:
+      IMAGE: ghcr.io/${{ github.repository_owner }}/hello-web   # owner must be lowercase for ghcr.io
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build and push image
+        run: |
+          TAG=${GITHUB_SHA::7}
+          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+          docker build -t "$IMAGE:$TAG" .
+          docker push "$IMAGE:$TAG"
+          echo "TAG=$TAG" >> "$GITHUB_ENV"
+
+      - name: Bump the dev tag in the GitOps repo
+        run: |
+          git clone "https://x-access-token:${{ secrets.GITOPS_TOKEN }}@github.com/satyanarayana418/argocd-lab.git" gitops
+          cd gitops/apps/hello-web/overlays/dev
+          kustomize edit set image "ghcr.io/stefanprodan/podinfo=$IMAGE:$TAG"
+          git config user.name  "ci-bot"
+          git config user.email "ci-bot@users.noreply.github.com"
+          git commit -am "dev: hello-web -> $TAG"
+          git push
+          # Promotion to qa/prod is a Pull Request reviewed by a human - not done here.

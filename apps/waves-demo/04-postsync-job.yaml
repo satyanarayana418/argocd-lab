@@ -1,0 +1,25 @@
+# PostSync hook: runs after every wave is Healthy - a smoke test.
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: smoke-test
+  annotations:
+    argocd.argoproj.io/hook: PostSync
+    argocd.argoproj.io/hook-delete-policy: BeforeHookCreation,HookSucceeded
+spec:
+  backoffLimit: 0
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: test
+          image: busybox:1.36
+          command:
+            - sh
+            - -c
+            - |
+              for i in 1 2 3 4 5 6; do
+                if wget -qO- http://waves-web/healthz; then echo; echo "PostSync: smoke test PASSED"; exit 0; fi
+                echo "waiting for waves-web..."; sleep 5
+              done
+              echo "PostSync: smoke test FAILED"; exit 1
