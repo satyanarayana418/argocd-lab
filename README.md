@@ -1,4 +1,4 @@
-# argocd-lab-t
+# argocd-lab-test
 
 GitOps lab repository for the 7-day Argo CD learning pack.
 Push this folder to GitHub as **`argocd-lab`**, then follow `03-ArgoCD-7-Day-Hands-On-Lab-Workbook.docx`.
